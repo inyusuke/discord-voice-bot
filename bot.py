@@ -90,17 +90,18 @@ async def process_voice_message(message, attachment):
                     file_id = upload_response.json().get('id')
                     
                     # ワークフロー実行
+                    # sys.filesは入力の外に配置する必要があるかもしれない
                     workflow_data = {
                         'inputs': {
                             'username': message.author.name,
                             'channel': message.channel.name,
-                            'server': message.guild.name if message.guild else 'DM',
-                            'sys.files': [{
-                                'transfer_method': 'local_file',
-                                'upload_file_id': file_id,
-                                'type': 'audio'
-                            }]
+                            'server': message.guild.name if message.guild else 'DM'
                         },
+                        'files': [{
+                            'transfer_method': 'local_file',
+                            'upload_file_id': file_id,
+                            'type': 'audio'
+                        }],
                         'response_mode': 'blocking',
                         'user': str(message.author.id)
                     }
@@ -141,7 +142,10 @@ async def process_voice_message(message, attachment):
                 else:
                     error_msg = f'❌ API エラー: {response.status_code}'
                     if response.text:
-                        error_msg += f'\n詳細: {response.text[:200]}'
+                        error_details = response.text[:500]
+                        error_msg += f'\n詳細: {error_details}'
+                    # デバッグ用: リクエストURLも表示
+                    error_msg += f'\nURL: {DIFY_API_URL}'
                     await processing_msg.edit(content=error_msg)
                     
         except Exception as e:
