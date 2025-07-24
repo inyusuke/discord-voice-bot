@@ -23,6 +23,8 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'{bot.user} がログインしました！')
     print('ボイスメモ転送Bot準備完了')
+    print(f'DIFY_API_URL: {DIFY_API_URL}')
+    print(f'DIFY_API_KEY: {DIFY_API_KEY[:15]}...' if DIFY_API_KEY else 'DIFY_API_KEY not set!')
 
 
 @bot.event
@@ -143,8 +145,9 @@ async def process_voice_message(message, attachment):
                     if response.text:
                         error_details = response.text[:500]
                         error_msg += f'\n詳細: {error_details}'
-                    # デバッグ用: リクエストURLも表示
+                    # デバッグ用: リクエストURLとキーの一部も表示
                     error_msg += f'\nURL: {DIFY_API_URL}'
+                    error_msg += f'\nAPI Key: {DIFY_API_KEY[:15]}...' if DIFY_API_KEY else '\nAPI Key not set!'
                     await processing_msg.edit(content=error_msg)
                     
         except Exception as e:
