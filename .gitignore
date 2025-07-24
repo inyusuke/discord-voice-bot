@@ -1,6 +1,7 @@
 # Environment variables
 .env
 .env.local
+.env.production
 
 # Python
 __pycache__/
@@ -11,12 +12,16 @@ __pycache__/
 venv/
 ENV/
 env/
+.venv
 
 # IDE
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
@@ -31,3 +36,18 @@ logs/
 *.wav
 *.ogg
 temp/
+tmp/
+
+# Data (Phase 2)
+phase2/data/transcripts/*
+phase2/data/analytics/*
+!phase2/data/transcripts/.gitkeep
+!phase2/data/analytics/.gitkeep
+
+# Config (keep examples)
+phase2/config/permissions.json
+phase2/config/reactions.json
+
+# Test files
+test_*
+*.test.*

@@ -23,8 +23,6 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'{bot.user} がログインしました！')
     print('ボイスメモ転送Bot準備完了')
-    print(f'DIFY_API_URL: {DIFY_API_URL}')
-    print(f'DIFY_API_KEY: {DIFY_API_KEY[:15]}...' if DIFY_API_KEY else 'DIFY_API_KEY not set!')
 
 
 @bot.event
@@ -128,8 +126,7 @@ async def process_voice_message(message, attachment):
                     transcription = outputs.get('transcription', '') or outputs.get('text', '')
                     
                     if not transcription:
-                        # デバッグ用 - 全体の構造を確認
-                        transcription = f"文字起こし結果が見つかりません。outputs: {json.dumps(outputs, ensure_ascii=False)[:300]}"
+                        transcription = "文字起こし結果が取得できませんでした。"
                     
                     # Difyからの応答を表示
                     embed = discord.Embed(
@@ -143,11 +140,11 @@ async def process_voice_message(message, attachment):
                 else:
                     error_msg = f'❌ API エラー: {response.status_code}'
                     if response.text:
-                        error_details = response.text[:500]
-                        error_msg += f'\n詳細: {error_details}'
-                    # デバッグ用: リクエストURLとキーの一部も表示
-                    error_msg += f'\nURL: {DIFY_API_URL}'
-                    error_msg += f'\nAPI Key: {DIFY_API_KEY[:15]}...' if DIFY_API_KEY else '\nAPI Key not set!'
+                        try:
+                            error_data = response.json()
+                            error_msg += f'\n{error_data.get("message", "不明なエラー")}'
+                        except:
+                            error_msg += f'\n{response.text[:200]}'
                     await processing_msg.edit(content=error_msg)
                     
         except Exception as e:

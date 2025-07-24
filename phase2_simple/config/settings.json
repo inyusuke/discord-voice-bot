@@ -1,0 +1,20 @@
+{
+  "bot": {
+    "name": "Voice Transcription Bot",
+    "version": "2.0-simple"
+  },
+  "features": {
+    "auto_transcribe": true,
+    "reaction_based_actions": true,
+    "slash_commands": true
+  },
+  "audio": {
+    "supported_formats": [".ogg", ".mp3", ".wav", ".m4a", ".webm"],
+    "max_file_size_mb": 50
+  },
+  "logging": {
+    "level": "INFO",
+    "max_file_size_mb": 10,
+    "backup_count": 5
+  }
+}
