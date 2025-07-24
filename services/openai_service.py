@@ -53,7 +53,7 @@ class OpenAIService:
                     pass
             return None
     
-    async def summarize_text(self, text: str, max_length: int = 100) -> Optional[str]:
+    def summarize_text(self, text: str, max_length: int = 100) -> Optional[str]:
         """テキストを要約"""
         if not self.api_key:
             self.logger.error("OpenAI API key not configured")
@@ -81,7 +81,7 @@ class OpenAIService:
             self.logger.error(f"Error summarizing text: {str(e)}")
             return None
     
-    async def translate_text(self, text: str, target_language: str = "English") -> Optional[str]:
+    def translate_text(self, text: str, target_language: str = "English") -> Optional[str]:
         """テキストを翻訳"""
         if not self.api_key:
             self.logger.error("OpenAI API key not configured")

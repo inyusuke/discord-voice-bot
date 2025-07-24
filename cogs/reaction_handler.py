@@ -107,7 +107,7 @@ class ReactionHandler(commands.Cog):
         voice_handler = self.bot.get_cog('VoiceHandler')
         if voice_handler and voice_handler.openai_service:
             self.logger.info(f"Generating summary for text: {transcription[:50]}...")
-            summary = await voice_handler.openai_service.summarize_text(transcription)
+            summary = voice_handler.openai_service.summarize_text(transcription)
             if not summary:
                 summary = "要約の生成に失敗しました。"
                 self.logger.error("Summary generation returned None")
@@ -148,7 +148,7 @@ class ReactionHandler(commands.Cog):
         voice_handler = self.bot.get_cog('VoiceHandler')
         if voice_handler and voice_handler.openai_service:
             self.logger.info(f"Generating translation for text: {transcription[:50]}...")
-            translation = await voice_handler.openai_service.translate_text(transcription, "English")
+            translation = voice_handler.openai_service.translate_text(transcription, "English")
             if not translation:
                 translation = "翻訳の生成に失敗しました。"
                 self.logger.error("Translation generation returned None")
