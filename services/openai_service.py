@@ -31,7 +31,7 @@ class OpenAIService:
             
             # Whisper APIで文字起こし
             with open(tmp_file_path, 'rb') as audio_file:
-                response = await openai.Audio.atranscribe(
+                response = openai.Audio.transcribe(
                     model="whisper-1",
                     file=audio_file,
                     language="ja"  # 日本語指定
@@ -63,7 +63,7 @@ class OpenAIService:
             return "短いテキストのため要約は不要です。"
         
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "あなたは要約の専門家です。日本語のテキストを簡潔に要約してください。"},
@@ -73,7 +73,7 @@ class OpenAIService:
                 temperature=0.5
             )
             
-            summary = response.choices[0].message.content.strip()
+            summary = response.choices[0].message['content'].strip()
             self.logger.info(f"Summary generated: {len(summary)} characters")
             return summary
             
@@ -88,7 +88,7 @@ class OpenAIService:
             return None
         
         try:
-            response = await openai.ChatCompletion.acreate(
+            response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": f"あなたは翻訳の専門家です。日本語のテキストを{target_language}に翻訳してください。"},
@@ -98,7 +98,7 @@ class OpenAIService:
                 temperature=0.3
             )
             
-            translation = response.choices[0].message.content.strip()
+            translation = response.choices[0].message['content'].strip()
             self.logger.info(f"Translation completed to {target_language}")
             return translation
             
