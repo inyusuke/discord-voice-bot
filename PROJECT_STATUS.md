@@ -7,11 +7,13 @@ Discord音声メッセージ転送Botの開発プロジェクト。Discordのボ
 
 ### 完了済み
 - ✅ Discord Bot基本機能の実装
-- ✅ GitHubリポジトリへのアップロード（https://github.com/inyusuke/discord-voice-bot）
+- ✅ GitHubリポジトリへのアップロード（https://github.com/yuin15/discord-voice-bot）※リポジトリ移動
 - ✅ Renderでのデプロイ（Starter $7/月プラン）
 - ✅ Bot動作確認（!testコマンド）
 - ✅ 音声メッセージ自動検出機能の実装
 - ✅ 音声ファイルのダウンロード処理
+- ✅ Difyワークフロー作成（Speech to Text）
+- ✅ ワークフローAPI統合実装
 
 ### 実装済み機能
 1. 音声メッセージの自動検出
@@ -33,11 +35,15 @@ Discord音声メッセージ転送Botの開発プロジェクト。Discordのボ
 - Dify API
 - Render（ホスティング）
 
+### 現在の課題
+- 401エラー: APIキーが無効（"Access token is invalid"）
+- Difyワークフロー専用のAPIキーの確認が必要
+
 ### 次のステップ
-1. Dify APIのエンドポイントとキーの設定
-2. Dify側での音声文字起こしワークフローの実装
-3. 音声メッセージ転送機能のテスト
-4. エラーハンドリングの改善
+1. Difyで正しいワークフローAPIキーを取得
+2. 環境変数を更新（ローカル＆Render）
+3. 音声メッセージ転送機能の最終テスト
+4. 本番運用開始
 
 ### トラブルシューティング
 - Python 3.13での`audioop`モジュールエラー → Python 3.11で解決

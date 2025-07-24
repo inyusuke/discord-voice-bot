@@ -90,7 +90,6 @@ async def process_voice_message(message, attachment):
                     file_id = upload_response.json().get('id')
                     
                     # ワークフロー実行
-                    # sys.filesは入力の外に配置する必要があるかもしれない
                     workflow_data = {
                         'inputs': {
                             'username': message.author.name,
