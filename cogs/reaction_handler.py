@@ -103,10 +103,12 @@ class ReactionHandler(commands.Cog):
         if not user:
             return
         
-        # DifyServiceで要約を生成
+        # OpenAIServiceで要約を生成
         voice_handler = self.bot.get_cog('VoiceHandler')
-        if voice_handler and voice_handler.dify_service:
-            summary = voice_handler.dify_service._generate_simple_summary(transcription)
+        if voice_handler and voice_handler.openai_service:
+            summary = await voice_handler.openai_service.summarize_text(transcription)
+            if not summary:
+                summary = "要約の生成に失敗しました。"
         else:
             summary = "要約サービスが利用できません。"
         
@@ -132,10 +134,12 @@ class ReactionHandler(commands.Cog):
         if not user:
             return
         
-        # DifyServiceで翻訳
+        # OpenAIServiceで翻訳
         voice_handler = self.bot.get_cog('VoiceHandler')
-        if voice_handler and voice_handler.dify_service:
-            translation = await voice_handler.dify_service.translate_text(transcription, "English")
+        if voice_handler and voice_handler.openai_service:
+            translation = await voice_handler.openai_service.translate_text(transcription, "English")
+            if not translation:
+                translation = "翻訳の生成に失敗しました。"
         else:
             translation = "翻訳サービスが利用できません。"
         
@@ -147,7 +151,7 @@ class ReactionHandler(commands.Cog):
             timestamp=discord.utils.utcnow()
         )
         embed.add_field(name="元のメッセージ", value=f"[こちら]({message.jump_url})", inline=False)
-        embed.set_footer(text="※ 高度な翻訳機能は開発中です")
+        embed.set_footer(text="Powered by OpenAI")
         
         try:
             await user.send(embed=embed)

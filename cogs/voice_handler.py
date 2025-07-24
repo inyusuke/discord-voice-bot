@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from services.dify_service import DifyService
+from services.openai_service import OpenAIService
 from utils.logger import setup_logger, log_voice_processing, log_error
 
 class VoiceHandler(commands.Cog):
@@ -8,7 +8,7 @@ class VoiceHandler(commands.Cog):
     
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.dify_service = DifyService()
+        self.openai_service = OpenAIService()
         self.logger = setup_logger('VoiceHandler')
         
         # サポートする音声フォーマット
@@ -16,12 +16,10 @@ class VoiceHandler(commands.Cog):
     
     async def cog_load(self):
         """Cogのロード時に実行"""
-        await self.dify_service.initialize()
         self.logger.info("VoiceHandler cog loaded")
     
     async def cog_unload(self):
         """Cogのアンロード時に実行"""
-        await self.dify_service.close()
         self.logger.info("VoiceHandler cog unloaded")
     
     @commands.Cog.listener()
@@ -56,11 +54,9 @@ class VoiceHandler(commands.Cog):
             }
             
             # 文字起こし
-            transcription = await self.dify_service.transcribe_audio(
+            transcription = await self.openai_service.transcribe_audio(
                 file_data=file_data,
-                filename=attachment.filename,
-                content_type=attachment.content_type or 'audio/ogg',
-                user_info=user_info
+                filename=attachment.filename
             )
             
             # 処理中メッセージを削除

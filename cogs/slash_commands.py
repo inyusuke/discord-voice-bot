@@ -65,10 +65,9 @@ class SlashCommands(commands.Cog):
         
         # API設定確認
         voice_handler = self.bot.get_cog('VoiceHandler')
-        dify_configured = False
-        if voice_handler and voice_handler.dify_service:
-            dify_configured = bool(voice_handler.dify_service.api_url and 
-                                 voice_handler.dify_service.api_key)
+        openai_configured = False
+        if voice_handler and voice_handler.openai_service:
+            openai_configured = bool(voice_handler.openai_service.api_key)
         
         embed = discord.Embed(
             title="✅ Bot動作確認",
@@ -82,8 +81,8 @@ class SlashCommands(commands.Cog):
         )
         
         embed.add_field(
-            name="Dify API",
-            value="✅ 設定済み" if dify_configured else "❌ 未設定",
+            name="OpenAI API",
+            value="✅ 設定済み" if openai_configured else "❌ 未設定",
             inline=True
         )
         
