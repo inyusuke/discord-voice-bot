@@ -1,5 +1,5 @@
 import os
-from openai import AsyncOpenAI
+import openai
 from typing import Optional
 import tempfile
 from utils.logger import setup_logger
@@ -12,14 +12,14 @@ class OpenAIService:
         self.logger = setup_logger('OpenAIService')
         
         if self.api_key:
-            self.client = AsyncOpenAI(api_key=self.api_key)
+            # 環境変数を設定（古い方式）
+            openai.api_key = self.api_key
         else:
             self.logger.error("OpenAI API key not found in environment variables")
-            self.client = None
     
     async def transcribe_audio(self, file_data: bytes, filename: str) -> Optional[str]:
         """音声ファイルを文字起こし"""
-        if not self.client:
+        if not self.api_key:
             self.logger.error("OpenAI API key not configured")
             return None
         
@@ -31,7 +31,7 @@ class OpenAIService:
             
             # Whisper APIで文字起こし
             with open(tmp_file_path, 'rb') as audio_file:
-                response = await self.client.audio.transcriptions.create(
+                response = await openai.Audio.atranscribe(
                     model="whisper-1",
                     file=audio_file,
                     language="ja"  # 日本語指定
@@ -40,7 +40,7 @@ class OpenAIService:
             # 一時ファイルを削除
             os.unlink(tmp_file_path)
             
-            transcription = response.text
+            transcription = response.get('text', '')
             self.logger.info(f"Transcription completed: {len(transcription)} characters")
             return transcription
             
@@ -55,7 +55,7 @@ class OpenAIService:
     
     async def summarize_text(self, text: str, max_length: int = 100) -> Optional[str]:
         """テキストを要約"""
-        if not self.client:
+        if not self.api_key:
             self.logger.error("OpenAI API key not configured")
             return None
         
@@ -63,7 +63,7 @@ class OpenAIService:
             return "短いテキストのため要約は不要です。"
         
         try:
-            response = await self.client.chat.completions.create(
+            response = await openai.ChatCompletion.acreate(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "あなたは要約の専門家です。日本語のテキストを簡潔に要約してください。"},
@@ -83,12 +83,12 @@ class OpenAIService:
     
     async def translate_text(self, text: str, target_language: str = "English") -> Optional[str]:
         """テキストを翻訳"""
-        if not self.client:
+        if not self.api_key:
             self.logger.error("OpenAI API key not configured")
             return None
         
         try:
-            response = await self.client.chat.completions.create(
+            response = await openai.ChatCompletion.acreate(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": f"あなたは翻訳の専門家です。日本語のテキストを{target_language}に翻訳してください。"},
