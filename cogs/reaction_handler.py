@@ -106,11 +106,16 @@ class ReactionHandler(commands.Cog):
         # OpenAIServiceで要約を生成
         voice_handler = self.bot.get_cog('VoiceHandler')
         if voice_handler and voice_handler.openai_service:
+            self.logger.info(f"Generating summary for text: {transcription[:50]}...")
             summary = await voice_handler.openai_service.summarize_text(transcription)
             if not summary:
                 summary = "要約の生成に失敗しました。"
+                self.logger.error("Summary generation returned None")
+            else:
+                self.logger.info(f"Summary generated successfully: {summary[:50]}...")
         else:
             summary = "要約サービスが利用できません。"
+            self.logger.error("OpenAI service not available")
         
         # 要約をDMで送信
         embed = discord.Embed(
@@ -125,8 +130,13 @@ class ReactionHandler(commands.Cog):
         try:
             await user.send(embed=embed)
             await message.add_reaction('✅')
+            self.logger.info(f"Summary sent to user {user_id}")
         except discord.Forbidden:
+            self.logger.warning(f"Failed to send DM to user {user_id} - DMs disabled")
             await message.reply(f"{user.mention} 要約結果をDMで送信しようとしましたが、DMを受け取る設定になっていません。", delete_after=10)
+        except Exception as e:
+            self.logger.error(f"Error sending summary: {str(e)}")
+            await message.reply(f"エラーが発生しました: {str(e)}", delete_after=10)
     
     async def translate_transcription(self, message: discord.Message, transcription: str, user_id: int):
         """文字起こし結果を翻訳"""
@@ -137,11 +147,16 @@ class ReactionHandler(commands.Cog):
         # OpenAIServiceで翻訳
         voice_handler = self.bot.get_cog('VoiceHandler')
         if voice_handler and voice_handler.openai_service:
+            self.logger.info(f"Generating translation for text: {transcription[:50]}...")
             translation = await voice_handler.openai_service.translate_text(transcription, "English")
             if not translation:
                 translation = "翻訳の生成に失敗しました。"
+                self.logger.error("Translation generation returned None")
+            else:
+                self.logger.info(f"Translation generated successfully: {translation[:50]}...")
         else:
             translation = "翻訳サービスが利用できません。"
+            self.logger.error("OpenAI service not available")
         
         # 翻訳結果をDMで送信
         embed = discord.Embed(
@@ -156,8 +171,13 @@ class ReactionHandler(commands.Cog):
         try:
             await user.send(embed=embed)
             await message.add_reaction('✅')
+            self.logger.info(f"Translation sent to user {user_id}")
         except discord.Forbidden:
+            self.logger.warning(f"Failed to send DM to user {user_id} - DMs disabled")
             await message.reply(f"{user.mention} 翻訳結果をDMで送信しようとしましたが、DMを受け取る設定になっていません。", delete_after=10)
+        except Exception as e:
+            self.logger.error(f"Error sending translation: {str(e)}")
+            await message.reply(f"エラーが発生しました: {str(e)}", delete_after=10)
 
 async def setup(bot: commands.Bot):
     """Cogをセットアップ"""
