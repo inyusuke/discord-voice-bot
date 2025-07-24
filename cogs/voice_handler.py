@@ -13,6 +13,9 @@ class VoiceHandler(commands.Cog):
         
         # サポートする音声フォーマット
         self.supported_formats = ('.ogg', '.mp3', '.wav', '.m4a', '.webm')
+        
+        # 処理中のメッセージIDを追跡
+        self.processing_messages = set()
     
     async def cog_load(self):
         """Cogのロード時に実行"""
@@ -36,55 +39,66 @@ class VoiceHandler(commands.Cog):
     
     async def process_voice_message(self, message: discord.Message, attachment: discord.Attachment):
         """音声メッセージを処理"""
-        log_voice_processing(self.logger, message, attachment)
+        # 重複処理を防ぐ
+        if message.id in self.processing_messages:
+            self.logger.warning(f"Message {message.id} is already being processed, skipping...")
+            return
         
-        # 処理中メッセージ
-        processing_msg = await message.reply('🎙️ 音声を処理中...')
+        self.processing_messages.add(message.id)
         
         try:
-            # 音声ファイルをダウンロード
-            file_data = await attachment.read()
+            log_voice_processing(self.logger, message, attachment)
             
-            # ユーザー情報
-            user_info = {
-                'user_id': str(message.author.id),
-                'username': message.author.name,
-                'channel': message.channel.name if hasattr(message.channel, 'name') else 'DM',
-                'server': message.guild.name if message.guild else 'DM'
-            }
+            # 処理中メッセージ
+            processing_msg = await message.reply('🎙️ 音声を処理中...')
             
-            # 文字起こし
-            transcription = await self.openai_service.transcribe_audio(
-                file_data=file_data,
-                filename=attachment.filename
-            )
-            
-            # 処理中メッセージを削除
-            await processing_msg.delete()
-            
-            if transcription:
-                # 結果を表示
-                embed = self.create_transcription_embed(
-                    transcription=transcription,
-                    author=message.author,
-                    channel=message.channel
+            try:
+                # 音声ファイルをダウンロード
+                file_data = await attachment.read()
+                
+                # ユーザー情報
+                user_info = {
+                    'user_id': str(message.author.id),
+                    'username': message.author.name,
+                    'channel': message.channel.name if hasattr(message.channel, 'name') else 'DM',
+                    'server': message.guild.name if message.guild else 'DM'
+                }
+                
+                # 文字起こし
+                transcription = await self.openai_service.transcribe_audio(
+                    file_data=file_data,
+                    filename=attachment.filename
                 )
                 
-                # メッセージを送信し、リアクションを追加
-                result_msg = await message.reply(embed=embed)
+                # 処理中メッセージを削除
+                await processing_msg.delete()
                 
-                # リアクションを追加
-                await result_msg.add_reaction('📝')  # 要約
-                await result_msg.add_reaction('🌐')  # 翻訳
-                
-                self.logger.info(f"Transcription completed for {attachment.filename}")
-            else:
-                await message.reply('❌ 文字起こしに失敗しました。')
-                self.logger.error(f"Transcription failed for {attachment.filename}")
-                
-        except Exception as e:
-            log_error(self.logger, e, f"during voice processing of {attachment.filename}")
-            await processing_msg.edit(content=f'❌ エラーが発生しました: {str(e)}')
+                if transcription:
+                    # 結果を表示
+                    embed = self.create_transcription_embed(
+                        transcription=transcription,
+                        author=message.author,
+                        channel=message.channel
+                    )
+                    
+                    # メッセージを送信し、リアクションを追加
+                    result_msg = await message.reply(embed=embed)
+                    
+                    # リアクションを追加
+                    await result_msg.add_reaction('📝')  # 要約
+                    await result_msg.add_reaction('🌐')  # 翻訳
+                    
+                    self.logger.info(f"Transcription completed for {attachment.filename}")
+                else:
+                    await message.reply('❌ 文字起こしに失敗しました。')
+                    self.logger.error(f"Transcription failed for {attachment.filename}")
+                    
+            except Exception as e:
+                log_error(self.logger, e, f"during voice processing of {attachment.filename}")
+                await processing_msg.edit(content=f'❌ エラーが発生しました: {str(e)}')
+        finally:
+            # 処理完了後、メッセージIDを削除
+            self.processing_messages.discard(message.id)
     
     def create_transcription_embed(self, transcription: str, author: discord.User, 
                                  channel: discord.abc.Messageable) -> discord.Embed:
