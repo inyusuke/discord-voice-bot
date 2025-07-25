@@ -90,6 +90,7 @@ class ReactionHandler(commands.Cog):
         # 元の文字起こしテキストを取得
         original_embed = message.embeds[0]
         transcription = original_embed.description
+        self.logger.info(f"Extracted transcription text: {transcription[:100] if transcription else 'None'}")
         
         # アクションに応じて処理
         if action == "summarize":
@@ -105,17 +106,25 @@ class ReactionHandler(commands.Cog):
         
         # OpenAIServiceで要約を生成
         voice_handler = self.bot.get_cog('VoiceHandler')
+        self.logger.info(f"VoiceHandler found: {voice_handler is not None}")
+        
         if voice_handler and voice_handler.openai_service:
+            self.logger.info(f"OpenAI service found, API key exists: {voice_handler.openai_service.api_key is not None}")
             self.logger.info(f"Generating summary for text: {transcription[:50]}...")
-            summary = voice_handler.openai_service.summarize_text(transcription)
-            if not summary:
-                summary = "要約の生成に失敗しました。"
-                self.logger.error("Summary generation returned None")
-            else:
-                self.logger.info(f"Summary generated successfully: {summary[:50]}...")
+            
+            try:
+                summary = voice_handler.openai_service.summarize_text(transcription)
+                if not summary:
+                    summary = "要約の生成に失敗しました。"
+                    self.logger.error("Summary generation returned None")
+                else:
+                    self.logger.info(f"Summary generated successfully: {summary[:50]}...")
+            except Exception as e:
+                summary = f"要約生成中にエラーが発生しました: {str(e)}"
+                self.logger.error(f"Error in summarize_text: {str(e)}")
         else:
             summary = "要約サービスが利用できません。"
-            self.logger.error("OpenAI service not available")
+            self.logger.error(f"OpenAI service not available - VoiceHandler: {voice_handler}, OpenAI service: {voice_handler.openai_service if voice_handler else 'N/A'}")
         
         # 要約をDMで送信
         embed = discord.Embed(
@@ -146,17 +155,25 @@ class ReactionHandler(commands.Cog):
         
         # OpenAIServiceで翻訳
         voice_handler = self.bot.get_cog('VoiceHandler')
+        self.logger.info(f"VoiceHandler found: {voice_handler is not None}")
+        
         if voice_handler and voice_handler.openai_service:
+            self.logger.info(f"OpenAI service found, API key exists: {voice_handler.openai_service.api_key is not None}")
             self.logger.info(f"Generating translation for text: {transcription[:50]}...")
-            translation = voice_handler.openai_service.translate_text(transcription, "English")
-            if not translation:
-                translation = "翻訳の生成に失敗しました。"
-                self.logger.error("Translation generation returned None")
-            else:
-                self.logger.info(f"Translation generated successfully: {translation[:50]}...")
+            
+            try:
+                translation = voice_handler.openai_service.translate_text(transcription, "English")
+                if not translation:
+                    translation = "翻訳の生成に失敗しました。"
+                    self.logger.error("Translation generation returned None")
+                else:
+                    self.logger.info(f"Translation generated successfully: {translation[:50]}...")
+            except Exception as e:
+                translation = f"翻訳生成中にエラーが発生しました: {str(e)}"
+                self.logger.error(f"Error in translate_text: {str(e)}")
         else:
             translation = "翻訳サービスが利用できません。"
-            self.logger.error("OpenAI service not available")
+            self.logger.error(f"OpenAI service not available - VoiceHandler: {voice_handler}, OpenAI service: {voice_handler.openai_service if voice_handler else 'N/A'}")
         
         # 翻訳結果をDMで送信
         embed = discord.Embed(
